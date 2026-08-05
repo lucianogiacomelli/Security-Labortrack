@@ -15,9 +15,11 @@ import lombok.Setter;
 public class Usuario extends Base{
     @Column(unique = true)
     private String email;
-    @Column(unique = true)
-    private String username;
     private String password;
+    @Column(nullable = false)
+    private String nombre;
+    @Column(nullable = false)
+    private String apellido;
     private boolean enabled;
     private boolean accountNonExpired;
     private boolean accountNonLocked;
