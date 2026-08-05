@@ -34,24 +34,31 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 
         String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        if(jwtToken != null){
-            jwtToken = jwtToken.substring(7); //Para quitar el bearer
-            DecodedJWT decodedJWT = jwtUtils.validateToken(jwtToken);
+        if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
+            jwtToken = jwtToken.substring(7); // Remueve "Bearer " de forma segura
 
-            String username = jwtUtils.extractUsename(decodedJWT);
-            String authorities = jwtUtils.getSpecificClaim(decodedJWT, "authorities").asString();
+            try {
+                DecodedJWT decodedJWT = jwtUtils.validateToken(jwtToken);
 
-            Collection<? extends GrantedAuthority> authoritiesList = AuthorityUtils
-                    .commaSeparatedStringToAuthorityList(authorities);
+                String username = jwtUtils.extractUsername(decodedJWT);
+                String authorities = jwtUtils.getSpecificClaim(decodedJWT, "authorities").asString();
 
-            SecurityContext securityContext = SecurityContextHolder.getContext();
-            Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authoritiesList);
-            securityContext.setAuthentication(authentication);
-            SecurityContextHolder.setContext(securityContext);
+                Collection<? extends GrantedAuthority> authoritiesList = AuthorityUtils
+                        .commaSeparatedStringToAuthorityList(authorities);
 
+                // Se crea un contexto vacio para evitar contaminacion de estado entre hilos
+                SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+                Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authoritiesList);
+                securityContext.setAuthentication(authentication);
+                SecurityContextHolder.setContext(securityContext);
+
+            } catch (Exception e) {
+                // Si el token expiro o la firma es invalida, se limpia el contexto
+                // Esto fuerza a Spring Security a responder con un 401 en lugar de un 500
+                SecurityContextHolder.clearContext();
+            }
         }
 
         filterChain.doFilter(request, response);
-
     }
 }

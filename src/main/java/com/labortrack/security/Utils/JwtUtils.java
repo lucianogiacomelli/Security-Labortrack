@@ -24,6 +24,9 @@ public class JwtUtils {
     @Value("${security.jwt.user.generator}")
     private String userGenerator;
 
+    @Value("${security.jwt.expiration.time}")
+    private Long expiration;
+
     public String createToken(Authentication authentication) {
 
         Algorithm algorithm = Algorithm.HMAC256(this.privateKey);
@@ -40,7 +43,7 @@ public class JwtUtils {
                 .withSubject(username) // a quien se le genera el token
                 .withClaim("authorities", authorities) //claims son los datos contraidos en el JWT
                 .withIssuedAt(new Date()) //fecha de generación del token
-                .withExpiresAt(new Date(System.currentTimeMillis() + 1800000)) //fecha de expiración, tiempo en milisegundos --> 30 minutos
+                .withExpiresAt(new Date(System.currentTimeMillis() + expiration)) //fecha de expiración, tiempo en milisegundos --> 30 minutos
                 .withJWTId(UUID.randomUUID().toString()) //id al token - que genere un random
                 .withNotBefore(new Date (System.currentTimeMillis())) //desde cuando es válido (desde ahora en este caso)
                 .sign(algorithm); //nuestra firma es la que creamos con la clave secreta
@@ -63,7 +66,7 @@ public class JwtUtils {
         }
     }
 
-    public String extractUsename(DecodedJWT decodedJWT){
+    public String extractUsername(DecodedJWT decodedJWT){
         return decodedJWT.getSubject().toString();
     }
 
