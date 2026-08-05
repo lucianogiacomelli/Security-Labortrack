@@ -20,11 +20,14 @@ public class Usuario extends Base{
     private String nombre;
     @Column(nullable = false)
     private String apellido;
+    @Column(name = "google_id", unique = true)
+    private String googleId;
     private boolean enabled;
     private boolean accountNonExpired;
     private boolean accountNonLocked;
     private boolean credentialsNonExpired;
-    @Column(unique = true, nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private RolNombre rol;
 
 }
