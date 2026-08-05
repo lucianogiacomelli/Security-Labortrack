@@ -29,6 +29,7 @@ public class UsuarioController {
 
     @PostMapping
     @PreAuthorize("permitAll()")
+    //@PreAuthorize("hasAnyRole('ADMIN','RRHH')") --> Cambiar despues
     public ResponseEntity<UserResponseDto> create(@RequestBody @Valid CreateUsuarioRequestDto dto){
         UserResponseDto usuario = usuarioService.createUser(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
