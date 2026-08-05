@@ -1,6 +1,7 @@
 package com.labortrack.security.Controller;
 
 import com.labortrack.security.Model.Dto.Request.AuthLoginRequestDto;
+import com.labortrack.security.Model.Dto.Request.GoogleLoginRequestDto;
 import com.labortrack.security.Model.Dto.Response.AuthLoginResponseDto;
 import com.labortrack.security.Service.Auth.AuthService;
 import jakarta.validation.Valid;
@@ -23,5 +24,11 @@ public class AuthenticationController {
     public ResponseEntity<AuthLoginResponseDto> loginUser (@Valid @RequestBody AuthLoginRequestDto authLoginRequestDto){
         AuthLoginResponseDto authLoginResponseDto = authService.loginUser(authLoginRequestDto);
         return ResponseEntity.ok(authLoginResponseDto);
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<AuthLoginResponseDto> loginWithGoogle(@Valid @RequestBody GoogleLoginRequestDto authGoogleLoginRequestDto) {
+        AuthLoginResponseDto response = authService.loginWithGoogle(authGoogleLoginRequestDto);
+        return ResponseEntity.ok(response);
     }
 }
