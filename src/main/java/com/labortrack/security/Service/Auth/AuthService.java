@@ -74,7 +74,7 @@ public class AuthService {
                     .withIssuerLocation("https://accounts.google.com")
                     .build();
 
-            Jwt googleJwt = jwtDecoder.decode(requestDto.googleId());
+            Jwt googleJwt = jwtDecoder.decode(requestDto.idToken());
 
             // 2. Verificar que el token pertenezca a nuestro Client ID
             if (!googleJwt.getAudience().contains(googleClientId)) {

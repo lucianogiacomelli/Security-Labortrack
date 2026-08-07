@@ -40,7 +40,8 @@ public class UsuarioServiceImp implements IUsuarioService{
 
     @Override
     public UserResponseDto createUser(CreateUsuarioRequestDto requestDto) {
-        if(usuarioRepository.findUserByEmail(requestDto.email())){
+        if(usuarioRepository.existsByEmail(requestDto.email())){
+            throw new IllegalArgumentException("El email ya se encuentra registrado");
             //throw new BusinnesRuleException --> Implementar manejo de excepciones despues
         }
         String password = encriptPassword(requestDto.password());

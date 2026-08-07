@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // Endpoints públicos de autenticación
+                        .requestMatchers("/api/auth/**", "/error").permitAll() // <-- Agrega /error // Endpoints públicos de autenticación
                         .anyRequest().authenticated()                  // El resto de los endpoints requieren JWT válido
                 )
                 .addFilterBefore(new JwtTokenValidator(jwtUtils), UsernamePasswordAuthenticationFilter.class)
