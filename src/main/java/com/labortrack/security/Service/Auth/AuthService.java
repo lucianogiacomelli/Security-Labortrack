@@ -3,7 +3,6 @@ package com.labortrack.security.Service.Auth;
 import com.labortrack.security.Model.Dto.Request.AuthLoginRequestDto;
 import com.labortrack.security.Model.Dto.Request.GoogleLoginRequestDto;
 import com.labortrack.security.Model.Dto.Response.AuthLoginResponseDto;
-import com.labortrack.security.Model.Entity.RolNombre;
 import com.labortrack.security.Model.Entity.Usuario;
 import com.labortrack.security.Repository.UsuarioRepository;
 import com.labortrack.security.Utils.JwtUtils;
