@@ -1,5 +1,7 @@
 package com.labortrack.security.Security.Filter;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.labortrack.security.Utils.JwtUtils;
 import jakarta.servlet.FilterChain;
@@ -19,9 +21,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collection;
 
-
 public class JwtTokenValidator extends OncePerRequestFilter {
-    private JwtUtils jwtUtils;
+
+    private final JwtUtils jwtUtils;
 
     public JwtTokenValidator(JwtUtils jwtUtils) {
         this.jwtUtils = jwtUtils;
@@ -35,7 +37,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
         String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
-            jwtToken = jwtToken.substring(7); // Remueve "Bearer " de forma segura
+            jwtToken = jwtToken.substring(7);
 
             try {
                 DecodedJWT decodedJWT = jwtUtils.validateToken(jwtToken);
@@ -46,16 +48,25 @@ public class JwtTokenValidator extends OncePerRequestFilter {
                 Collection<? extends GrantedAuthority> authoritiesList = AuthorityUtils
                         .commaSeparatedStringToAuthorityList(authorities);
 
-                // Se crea un contexto vacio para evitar contaminacion de estado entre hilos
                 SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
                 Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authoritiesList);
                 securityContext.setAuthentication(authentication);
                 SecurityContextHolder.setContext(securityContext);
 
-            } catch (Exception e) {
-                // Si el token expiro o la firma es invalida, se limpia el contexto
-                // Esto fuerza a Spring Security a responder con un 401 en lugar de un 500
+            } catch (TokenExpiredException e) {
+                // Token expirado naturalmente: guardamos el flag para el AuthenticationEntryPoint
                 SecurityContextHolder.clearContext();
+                request.setAttribute("jwt_error", "TOKEN_EXPIRED");
+
+            } catch (JWTVerificationException e) {
+                // Token con firma inválida, manipulado o mal formado
+                SecurityContextHolder.clearContext();
+                request.setAttribute("jwt_error", "TOKEN_INVALID");
+
+            } catch (Exception e) {
+                // Cualquier otra falla imprevista
+                SecurityContextHolder.clearContext();
+                request.setAttribute("jwt_error", "TOKEN_INVALID");
             }
         }
 

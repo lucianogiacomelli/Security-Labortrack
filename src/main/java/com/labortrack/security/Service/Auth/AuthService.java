@@ -3,6 +3,8 @@ package com.labortrack.security.Service.Auth;
 import com.labortrack.security.Model.Dto.Request.AuthLoginRequestDto;
 import com.labortrack.security.Model.Dto.Request.GoogleLoginRequestDto;
 import com.labortrack.security.Model.Dto.Response.AuthLoginResponseDto;
+import com.labortrack.security.Model.Dto.Response.RefreshTokenResponse;
+import com.labortrack.security.Model.Entity.RefreshToken;
 import com.labortrack.security.Model.Entity.Usuario;
 import com.labortrack.security.Repository.UsuarioRepository;
 import com.labortrack.security.Utils.JwtUtils;
@@ -30,17 +32,20 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final UsuarioRepository usuarioRepository;
+    private final RefreshTokenService refreshTokenService;
     @Value("${google.client.id}")
     private String googleClientId;
 
     public AuthService(UserDetailsService userDetailsService,
                        PasswordEncoder passwordEncoder,
                        JwtUtils jwtUtils,
-                       UsuarioRepository usuarioRepository) {
+                       UsuarioRepository usuarioRepository,
+                       RefreshTokenService refreshTokenService) {
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.usuarioRepository = usuarioRepository;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public AuthLoginResponseDto loginUser(AuthLoginRequestDto authLoginRequestDto){
@@ -50,7 +55,8 @@ public class AuthService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String accessToken = jwtUtils.createToken(authentication);
 
-        AuthLoginResponseDto authLoginResponseDto = new AuthLoginResponseDto(email, "Login OK", accessToken, true );
+        RefreshTokenResponse refreshToken = refreshTokenService.createRefreshToken(email);
+        AuthLoginResponseDto authLoginResponseDto = new AuthLoginResponseDto(email, "Login OK", accessToken, refreshToken.rawToken(),true );
         return authLoginResponseDto;
     }
 
@@ -106,8 +112,9 @@ public class AuthService {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String accessToken = jwtUtils.createToken(authentication);
+            RefreshTokenResponse refreshToken = refreshTokenService.createRefreshToken(email);
 
-            return new AuthLoginResponseDto(email, "Login con Google OK", accessToken, true);
+            return new AuthLoginResponseDto(email, "Login con Google OK", accessToken,refreshToken.rawToken(), true);
 
         } catch (BadCredentialsException e) {
             throw e; // Lanza el mensaje exacto de credencial/usuario inválido

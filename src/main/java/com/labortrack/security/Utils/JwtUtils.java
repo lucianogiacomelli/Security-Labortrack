@@ -52,18 +52,14 @@ public class JwtUtils {
     }
 
     public DecodedJWT validateToken(String token){
-        try {
-            Algorithm algorithm = Algorithm.HMAC256(this.privateKey);
+        Algorithm algorithm = Algorithm.HMAC256(this.privateKey);
 
-            JWTVerifier verifier = JWT.require(algorithm)
-                    .withIssuer(this.userGenerator)
-                    .build();
+        JWTVerifier verifier = JWT.require(algorithm)
+                .withIssuer(this.userGenerator)
+                .build();
 
-            DecodedJWT decodedJWT = verifier.verify(token);
-            return decodedJWT;
-        } catch (JWTVerificationException e) {
-            throw new JWTVerificationException("Invalid token. Not authorized", e);
-        }
+        // Al eliminar el try-catch interno, se propaga TokenExpiredException intacta
+        return verifier.verify(token);
     }
 
     public String extractUsername(DecodedJWT decodedJWT){

@@ -1,6 +1,7 @@
 package com.labortrack.security.Security.Config;
 
 
+import com.labortrack.security.Security.Entry.JwtAuthenticationEntryPoint;
 import com.labortrack.security.Security.Filter.JwtTokenValidator;
 import com.labortrack.security.Utils.JwtUtils;
 import org.springframework.context.annotation.Bean;
@@ -25,9 +26,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtUtils jwtUtils;
+    private final JwtAuthenticationEntryPoint  jwtAuthenticationEntryPoint;
 
-    public SecurityConfig(JwtUtils jwtUtils) {
+    public SecurityConfig(JwtUtils jwtUtils,
+                          JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
         this.jwtUtils = jwtUtils;
+        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
     }
 
     @Bean
@@ -35,6 +39,9 @@ public class SecurityConfig {
         return httpSecurity
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint) // Intercepta el 401
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/error").permitAll() // <-- Agrega /error // Endpoints públicos de autenticación
                         .anyRequest().authenticated()                  // El resto de los endpoints requieren JWT válido
