@@ -69,4 +69,9 @@ public class RefreshTokenService {
         String hashedToken = HashUtils.hashToken(rawToken);
         refreshTokenRepository.deleteByToken(hashedToken);
     }
+
+    @Transactional
+    public void deleteByUsuario(Usuario usuario) {
+        refreshTokenRepository.deleteByUsuario(usuario);
+    }
 }

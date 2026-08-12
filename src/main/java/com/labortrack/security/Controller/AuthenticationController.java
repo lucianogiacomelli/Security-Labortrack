@@ -1,8 +1,6 @@
 package com.labortrack.security.Controller;
 
-import com.labortrack.security.Model.Dto.Request.AuthLoginRequestDto;
-import com.labortrack.security.Model.Dto.Request.GoogleLoginRequestDto;
-import com.labortrack.security.Model.Dto.Request.RefreshTokenRequestDto;
+import com.labortrack.security.Model.Dto.Request.*;
 import com.labortrack.security.Model.Dto.Response.AuthLoginResponseDto;
 import com.labortrack.security.Model.Entity.RefreshToken;
 import com.labortrack.security.Service.Auth.AuthService;
@@ -84,6 +82,21 @@ public class AuthenticationController {
     public ResponseEntity<String> logout(@RequestBody @Valid RefreshTokenRequestDto request) {
         refreshTokenService.deleteByToken(request.refreshToken());
         return ResponseEntity.ok("Sesión cerrada exitosamente");
+    }
+
+    // --- NUEVOS ENDPOINTS PARA RECUPERO DE CONTRASEÑA ---
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDto request) {
+        authService.processForgotPassword(request.email());
+        // Se responde siempre OK con un mensaje genérico para evitar enumeración de usuarios
+        return ResponseEntity.ok("Si el email está registrado en el sistema, recibirás las instrucciones para restablecer tu contraseña.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequestDto request) {
+        authService.processResetPassword(request.token(), request.newPassword());
+        return ResponseEntity.ok("Contraseña restablecida exitosamente.");
     }
 
 }
