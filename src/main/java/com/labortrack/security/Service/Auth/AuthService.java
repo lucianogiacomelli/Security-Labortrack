@@ -143,26 +143,26 @@ public class AuthService {
     public void processForgotPassword(String email) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findUserEntityByEmail(email);
 
-        // Si no existe, retorna sin error para prevenir la enumeración de usuarios
         if (usuarioOpt.isEmpty()) {
             return;
         }
 
         Usuario usuario = usuarioOpt.get();
 
-        // Borra tokens anteriores del usuario si existían
-        passwordResetTokenRepository.deleteByUsuario(usuario);
+        // Reutiliza la entidad si ya existía para el usuario, o instancia una nueva
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByUsuario(usuario)
+                .orElseGet(() -> {
+                    PasswordResetToken newToken = new PasswordResetToken();
+                    newToken.setUsuario(usuario);
+                    return newToken;
+                });
 
-        // Genera el token único con 15 minutos de validez
         String rawToken = UUID.randomUUID().toString();
-        PasswordResetToken resetToken = new PasswordResetToken();
-        resetToken.setUsuario(usuario);
         resetToken.setToken(rawToken);
         resetToken.setExpiryDate(Instant.now().plus(15, ChronoUnit.MINUTES));
 
         passwordResetTokenRepository.save(resetToken);
 
-        // Envía el correo SMTP
         emailService.sendPasswordResetEmail(usuario.getEmail(), rawToken);
     }
 
